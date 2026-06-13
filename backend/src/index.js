@@ -70,6 +70,20 @@ app.use('/api/services', servicesRouter);
 app.use('/api/orders',   orderLimiter,   ordersRouter);
 app.use('/api/contact',  contactLimiter, contactRouter);
 
+// GET /api/currency — proxy to Frankfurter (avoids browser CORS)
+app.get('/api/currency', async (req, res) => {
+  const { amount = 80, from = 'INR', to = 'USD,EUR,GBP,AED,SGD,AUD,CAD,JPY' } = req.query;
+  try {
+    const response = await fetch(
+      `https://api.frankfurter.app/latest?amount=${amount}&from=${from}&to=${to}`
+    );
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(503).json({ error: 'Currency service unavailable' });
+  }
+});
+
 // ── 404 ───────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });

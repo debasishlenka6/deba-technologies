@@ -62,14 +62,14 @@
               <label>Country *</label>
               <select id="clientCountry" required>
                 <option value="">Select your country</option>
-                <option value="India">🇮🇳 India</option>
-                <option value="USA">🇺🇸 United States</option>
-                <option value="UK">🇬🇧 United Kingdom</option>
-                <option value="UAE">🇦🇪 UAE</option>
-                <option value="Singapore">🇸🇬 Singapore</option>
-                <option value="Australia">🇦🇺 Australia</option>
-                <option value="Canada">🇨🇦 Canada</option>
-                <option value="Germany">🇩🇪 Germany</option>
+                <option value="India">🇮🇳 India — ₹ INR</option>
+                <option value="USA">🇺🇸 United States — $ USD</option>
+                <option value="UK">🇬🇧 United Kingdom — £ GBP</option>
+                <option value="UAE">🇦🇪 UAE — AED</option>
+                <option value="Singapore">🇸🇬 Singapore — S$ SGD</option>
+                <option value="Australia">🇦🇺 Australia — A$ AUD</option>
+                <option value="Canada">🇨🇦 Canada — CA$ CAD</option>
+                <option value="Germany">🇩🇪 Germany — € EUR</option>
                 <option value="Other">🌍 Other</option>
               </select>
             </div>
@@ -120,13 +120,13 @@
         <div class="order-section">
           <div class="order-section-title">💰 Your Budget (Hourly Rate)</div>
           <p style="color:var(--muted);font-size:.875rem;margin-bottom:1rem">
-            Set your hourly rate. Minimum is <strong style="color:var(--accent2)">₹80/hr</strong>.
+            Set your hourly rate. Minimum is <strong id="rateMinNote" style="color:var(--accent2)">₹80/hr</strong>.
             You can offer more based on urgency or complexity.
           </p>
           <div class="form-group">
-            <label>Rate per hour (in ₹ INR) *</label>
+            <label id="rateLabel">Rate per hour (in ₹ INR) *</label>
             <div class="price-input-group">
-              <span class="currency-sym">₹</span>
+              <span class="currency-sym" id="rateCurrencySym">₹</span>
               <input type="number" id="hourlyRate" value="150" min="80" max="50000"
                      placeholder="150" required
                      style="padding-left:2rem" />

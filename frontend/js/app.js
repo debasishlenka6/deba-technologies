@@ -70,21 +70,27 @@ const SERVICES = [
 let exchangeRates = null;
 let ratesFetchTime = null;
 
+// Always use our own backend as proxy — avoids CORS issues
+const CURRENCY_API = '/api/currency';
+
+const FALLBACK_RATES_PER_INR = {
+  USD:0.012, EUR:0.011, GBP:0.0094, AED:0.044,
+  SGD:0.016, AUD:0.018, CAD:0.016, JPY:1.8
+};
+
 async function fetchRates(baseAmountINR) {
   try {
-    // Frankfurter API — completely free, no key needed
-    const url = `https://api.frankfurter.app/latest?amount=${baseAmountINR}&from=INR&to=USD,EUR,GBP,AED,SGD,AUD,CAD,JPY`;
+    const url = `${CURRENCY_API}?amount=${baseAmountINR}&from=INR&to=USD,EUR,GBP,AED,SGD,AUD,CAD,JPY`;
     const res = await fetch(url);
+    if (!res.ok) throw new Error('API error');
     const data = await res.json();
     exchangeRates = data.rates;
     ratesFetchTime = Date.now();
     return data.rates;
   } catch (err) {
     console.warn('Currency fetch failed, using fallback rates');
-    // Fallback approximate rates per 1 INR
-    const perINR = { USD:0.012, EUR:0.011, GBP:0.0094, AED:0.044, SGD:0.016, AUD:0.018, CAD:0.016, JPY:1.8 };
     const result = {};
-    for (const [cur, rate] of Object.entries(perINR)) {
+    for (const [cur, rate] of Object.entries(FALLBACK_RATES_PER_INR)) {
       result[cur] = (baseAmountINR * rate).toFixed(2);
     }
     return result;
@@ -143,7 +149,6 @@ function initPriceSlider() {
     valDisplay.textContent = `₹${val}/hr`;
     heroPrice.textContent = `₹${val}/hr`;
 
-    // Update slider gradient
     const pct = ((val - 80) / (500 - 80)) * 100;
     slider.style.background = `linear-gradient(to right, var(--accent2) 0%, var(--accent2) ${pct}%, var(--border2) ${pct}%, var(--border2) 100%)`;
 
@@ -217,10 +222,8 @@ async function init() {
   initPriceSlider();
   initContactForm();
 
-  // Initial currency load
   await renderCurrencyGrid(DEFAULT_RATE_INR);
 
-  // Update hero price USD
   const rates = await fetchRates(MIN_RATE_INR);
   const heroPriceUsd = document.getElementById('heroPriceUsd');
   if (heroPriceUsd && rates.USD) {

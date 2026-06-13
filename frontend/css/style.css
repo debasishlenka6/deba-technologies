@@ -364,7 +364,17 @@ a:hover { color: var(--accent2); }
 }
 .price-input-group input { padding-left: 2rem !important; }
 .price-conversions { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: .5rem; }
-.price-conv-item { font-size: .8rem; color: var(--muted); background: var(--bg2); padding: .25rem .6rem; border-radius: 4px; border: 1px solid var(--border); }
+.price-conv-item {
+  font-size: .8rem; color: var(--muted); background: var(--bg2);
+  padding: .3rem .7rem; border-radius: 6px; border: 1px solid var(--border);
+  cursor: pointer; transition: background .15s, border-color .15s, color .15s;
+  user-select: none;
+}
+.price-conv-item:hover { background: var(--bg3); color: var(--fg); border-color: var(--accent); }
+.price-conv-item.conv-active {
+  background: rgba(0,200,150,.15); border-color: var(--accent2);
+  color: var(--accent2); font-weight: 700;
+}
 .price-warning { font-size: .8rem; color: var(--red); margin-top: .3rem; display: none; }
 .price-warning.show { display: block; }
 .order-summary {

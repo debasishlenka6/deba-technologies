@@ -1,8 +1,24 @@
 // ── ORDER PAGE JS ─────────────────────────────────
-const MIN_RATE = 80;
-const API_BASE_ORDER = window.location.hostname === 'localhost'
+const MIN_INR = 80;
+const API_BASE_ORDER = window.location.port === '3000'
   ? 'http://localhost:3000/api'
   : '/api';
+
+// Canonical INR value — always kept in sync
+let canonicalINR = 150;
+
+// Active display currency (may differ from INR when country is selected)
+let activeCurrency = { code: 'INR', sym: '₹', ratePerINR: 1 };
+
+function inrToLocal(inr) {
+  return parseFloat((inr * activeCurrency.ratePerINR).toFixed(2));
+}
+function localToINR(local) {
+  return Math.round(local / activeCurrency.ratePerINR);
+}
+function minLocal() {
+  return parseFloat((MIN_INR * activeCurrency.ratePerINR).toFixed(2));
+}
 
 // Pre-select service from URL param
 function preselectService() {
@@ -55,50 +71,148 @@ function hoursToNum(val) {
 
 // Update order summary
 function updateSummary() {
-  const service = document.getElementById('serviceType')?.value || '—';
-  const hours = document.getElementById('estimatedHours')?.value || '10-20';
-  const rate = parseInt(document.getElementById('hourlyRate')?.value) || 150;
+  const service  = document.getElementById('serviceType')?.value || '—';
+  const hours    = document.getElementById('estimatedHours')?.value || '10-20';
+  const { sym, code } = activeCurrency;
+  const localRate = inrToLocal(canonicalINR);
+  const estINR    = Math.round(hoursToNum(hours) * canonicalINR);
+  const estLocal  = parseFloat((hoursToNum(hours) * localRate).toFixed(2));
 
   document.getElementById('sum-service').textContent = service || '—';
-  document.getElementById('sum-hours').textContent = hours;
-  document.getElementById('sum-rate').textContent = `₹${rate}/hr`;
+  document.getElementById('sum-hours').textContent   = hours;
+  document.getElementById('sum-rate').textContent    = `${sym}${localRate}/${code}`;
 
-  const est = Math.round(hoursToNum(hours) * rate);
-  document.getElementById('sum-total').textContent = est > 0 ? `₹${est.toLocaleString()}` : '—';
+  if (estINR > 0) {
+    document.getElementById('sum-total').textContent = code === 'INR'
+      ? `₹${estINR.toLocaleString()}`
+      : `${sym}${estLocal.toLocaleString()} (≈ ₹${estINR.toLocaleString()})`;
+  } else {
+    document.getElementById('sum-total').textContent = '—';
+  }
 }
 
-// Currency conversion for rate input
+// Country → currency map
+const COUNTRY_CURRENCY = {
+  'India':     { code: 'INR', sym: '₹' },
+  'USA':       { code: 'USD', sym: '$' },
+  'UK':        { code: 'GBP', sym: '£' },
+  'UAE':       { code: 'AED', sym: 'AED ' },
+  'Singapore': { code: 'SGD', sym: 'S$' },
+  'Australia': { code: 'AUD', sym: 'A$' },
+  'Canada':    { code: 'CAD', sym: 'CA$' },
+  'Germany':   { code: 'EUR', sym: '€' },
+  'Other':     { code: null,  sym: null }
+};
+
+const ALL_CURRENCIES = 'USD,EUR,GBP,AED,SGD,AUD,CAD';
+const CURRENCY_SYMS  = { INR:'₹', USD:'$', EUR:'€', GBP:'£', AED:'AED ', SGD:'S$', AUD:'A$', CAD:'CA$' };
+
+// Update input UI to reflect activeCurrency
+function updateRateUI() {
+  const { code, sym } = activeCurrency;
+  const minLoc  = minLocal();
+  const dispVal = inrToLocal(canonicalINR);
+
+  const symEl   = document.getElementById('rateCurrencySym');
+  const labelEl = document.getElementById('rateLabel');
+  const minNote = document.getElementById('rateMinNote');
+  const warning = document.getElementById('priceWarning');
+  const input   = document.getElementById('hourlyRate');
+
+  if (symEl)   symEl.textContent   = sym;
+  if (labelEl) labelEl.textContent = `Rate per hour (in ${sym} ${code}) *`;
+  if (minNote) minNote.textContent = `${sym}${minLoc}/hr`;
+  if (warning) warning.textContent = `⚠️ Minimum rate is ${sym}${minLoc}/hr`;
+  if (input) {
+    input.value = dispVal;
+    input.min   = minLoc;
+    input.step  = activeCurrency.ratePerINR < 0.05 ? '0.01' : activeCurrency.ratePerINR < 1 ? '0.1' : '1';
+    input.style.borderColor = '';
+    document.getElementById('priceWarning')?.classList.remove('show');
+    // Adjust left padding so value never overlaps symbol (AED needs more space than ₹)
+    const symLen = sym.trim().length;
+    input.style.paddingLeft = symLen <= 1 ? '2rem' : symLen === 2 ? '2.5rem' : symLen === 3 ? '3rem' : '3.75rem';
+  }
+  updateSummary();
+}
+
+// Fetch rate for selected country and switch input currency
+async function applyCurrencyForCountry(country) {
+  const cur = COUNTRY_CURRENCY[country];
+  if (!cur || !cur.code || cur.code === 'INR') {
+    activeCurrency = { code: 'INR', sym: '₹', ratePerINR: 1 };
+    updateRateUI();
+    updateConversions(canonicalINR);
+    return;
+  }
+  const container = document.getElementById('priceConversions');
+  if (container) container.innerHTML = '<span class="price-conv-item">Loading...</span>';
+  try {
+    const res  = await fetch(`${API_BASE_ORDER}/currency?amount=1&from=INR&to=${cur.code}`);
+    const data = await res.json();
+    activeCurrency = { code: cur.code, sym: cur.sym, ratePerINR: data.rates[cur.code] };
+  } catch {
+    activeCurrency = { code: 'INR', sym: '₹', ratePerINR: 1 };
+  }
+  updateRateUI();
+  updateConversions(canonicalINR);
+}
+
+// Show equivalent rates as clickable chips
 let convTimer;
 async function updateConversions(amountINR) {
   const container = document.getElementById('priceConversions');
   if (!container) return;
-  if (isNaN(amountINR) || amountINR < 1) {
-    container.innerHTML = '';
-    return;
-  }
-  container.innerHTML = '<span class="price-conv-item">Loading...</span>';
+  if (isNaN(amountINR) || amountINR < 1) { container.innerHTML = ''; return; }
+
+  const primary = activeCurrency.code;
+  const others  = ALL_CURRENCIES.split(',').filter(c => c !== primary);
+  const toParam = primary === 'INR' ? ALL_CURRENCIES : ['INR', ...others].join(',');
+
   try {
-    const url = `https://api.frankfurter.app/latest?amount=${amountINR}&from=INR&to=USD,EUR,GBP,AED`;
-    const res = await fetch(url);
+    const res  = await fetch(`${API_BASE_ORDER}/currency?amount=${amountINR}&from=INR&to=${toParam}`);
     const data = await res.json();
-    const syms = { USD:'$', EUR:'€', GBP:'£', AED:'AED ' };
-    container.innerHTML = Object.entries(data.rates)
-      .map(([cur, val]) => `<span class="price-conv-item">${syms[cur]}${parseFloat(val).toFixed(2)} ${cur}</span>`)
+
+    // Build entries: exclude the currently active currency (already in the input)
+    const entries = primary !== 'INR'
+      ? [['INR', amountINR], ...Object.entries(data.rates).filter(([c]) => c !== primary)]
+      : Object.entries(data.rates);
+
+    container.innerHTML = entries
+      .map(([cur, val]) => {
+        const sym        = CURRENCY_SYMS[cur] || '';
+        const ratePerINR = parseFloat(val) / amountINR;
+        return `<span class="price-conv-item" data-code="${cur}" data-sym="${sym.trim()}" data-rate="${ratePerINR}" title="Click to enter rate in ${cur}">${sym}${parseFloat(val).toFixed(2)} ${cur}</span>`;
+      })
       .join('');
+
+    // Clicking a chip switches the input to that currency
+    container.querySelectorAll('.price-conv-item').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const code       = chip.dataset.code;
+        const ratePerINR = parseFloat(chip.dataset.rate);
+        activeCurrency   = { code, sym: CURRENCY_SYMS[code] || chip.dataset.sym, ratePerINR };
+        updateRateUI();
+        updateConversions(canonicalINR);
+      });
+    });
   } catch {
-    container.innerHTML = '<span class="price-conv-item" style="color:var(--muted)">Conversion unavailable</span>';
+    container.innerHTML = '<span class="price-conv-item" style="cursor:default;color:var(--muted)">Conversion unavailable</span>';
   }
 }
 
 // Rate input validation + conversion
 function initRateInput() {
   const rateInput = document.getElementById('hourlyRate');
-  const warning = document.getElementById('priceWarning');
+  const warning   = document.getElementById('priceWarning');
   if (!rateInput) return;
 
   rateInput.addEventListener('input', () => {
-    const val = parseInt(rateInput.value);
-    if (val < MIN_RATE && rateInput.value !== '') {
+    const localVal = parseFloat(rateInput.value);
+    const minLoc   = minLocal();
+    if (!isNaN(localVal)) canonicalINR = localToINR(localVal);
+
+    if (!isNaN(localVal) && localVal < minLoc && rateInput.value !== '') {
       warning.classList.add('show');
       rateInput.style.borderColor = 'var(--red)';
     } else {
@@ -107,18 +221,20 @@ function initRateInput() {
     }
     clearTimeout(convTimer);
     convTimer = setTimeout(() => {
-      updateConversions(val);
+      updateConversions(canonicalINR);
       updateSummary();
     }, 500);
   });
 
   rateInput.addEventListener('blur', () => {
-    const val = parseInt(rateInput.value);
-    if (isNaN(val) || val < MIN_RATE) {
-      rateInput.value = MIN_RATE;
+    const localVal = parseFloat(rateInput.value);
+    const minLoc   = minLocal();
+    if (isNaN(localVal) || localVal < minLoc) {
+      canonicalINR        = MIN_INR;
+      rateInput.value     = inrToLocal(MIN_INR);
       warning.classList.remove('show');
       rateInput.style.borderColor = '';
-      updateConversions(MIN_RATE);
+      updateConversions(canonicalINR);
       updateSummary();
     }
   });
@@ -139,6 +255,11 @@ function initOrderForm() {
     document.getElementById(id)?.addEventListener('change', updateSummary);
   });
 
+  // When country changes, switch input currency
+  document.getElementById('clientCountry')?.addEventListener('change', () => {
+    applyCurrencyForCountry(document.getElementById('clientCountry').value);
+  });
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
@@ -150,7 +271,7 @@ function initOrderForm() {
     const country = document.getElementById('clientCountry').value;
     const service = document.getElementById('serviceType').value;
     const desc = document.getElementById('projectDesc').value.trim();
-    const rate = parseInt(document.getElementById('hourlyRate').value);
+    const rate = canonicalINR;
 
     if (!name || name.length < 2) {
       status.textContent = '❌ Please enter your full name';
@@ -177,8 +298,8 @@ function initOrderForm() {
       status.className = 'form-status error';
       return;
     }
-    if (isNaN(rate) || rate < MIN_RATE) {
-      status.textContent = `❌ Minimum rate is ₹${MIN_RATE}/hr`;
+    if (isNaN(rate) || rate < MIN_INR) {
+      status.textContent = `❌ Minimum rate is ₹${MIN_INR}/hr`;
       status.className = 'form-status error';
       return;
     }
@@ -243,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initDescCount();
   initRateInput();
   initOrderForm();
-  updateConversions(150);
+  updateConversions(canonicalINR);
   updateSummary();
   document.getElementById('navbar')?.classList.add('scrolled');
 });
