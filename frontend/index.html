@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deba Technologies — IT Support & Network Services</title>
+  <meta name="description" content="Professional IT Support, Network Infrastructure, Cybersecurity and DevOps services by Debasish Lenka. Starting from ₹80/hr." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ── NAVBAR ─────────────────────────────── -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <span class="brand-icon">⚡</span>
+        <div>
+          <span class="brand-name">Deba Technologies</span>
+          <span class="brand-tag">IT Solutions</span>
+        </div>
+      </div>
+      <div class="nav-links" id="navLinks">
+        <a href="#services">Services</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+        <a href="https://debasishlenka6.github.io/debasish-portfolio" target="_blank" class="nav-portfolio">📋 Portfolio</a>
+        <a href="pages/order.html" class="nav-cta">🚀 Hire Me</a>
+      </div>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">☰</button>
+    </div>
+  </nav>
+
+  <!-- ── HERO ──────────────────────────────── -->
+  <section class="hero" id="home">
+    <div class="hero-bg">
+      <div class="grid-overlay"></div>
+      <div class="glow glow-1"></div>
+      <div class="glow glow-2"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge">🟢 Available for Projects</div>
+      <h1>
+        <span class="hero-sub">Professional</span>
+        IT Support &amp;<br/>
+        <span class="gradient-text">Network Services</span>
+      </h1>
+      <p class="hero-desc">
+        Expert IT infrastructure, network engineering, cybersecurity, and DevOps services.
+        Serving clients globally from India. Transparent pricing. Reliable delivery.
+      </p>
+      <div class="hero-price">
+        <span class="price-label">Starting from</span>
+        <span class="price-value" id="heroPrice">₹80/hr</span>
+        <span class="price-usd" id="heroPriceUsd">≈ $0.97/hr</span>
+      </div>
+      <div class="hero-actions">
+        <a href="pages/order.html" class="btn-primary">🚀 Hire Me Now</a>
+        <a href="#services" class="btn-secondary">View Services ↓</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num">5+</span><span class="stat-lbl">Years Experience</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">8+</span><span class="stat-lbl">Services</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">₹80</span><span class="stat-lbl">Min Rate/hr</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">24hr</span><span class="stat-lbl">Response Time</span></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="tech-card">
+        <div class="tc-icon">🌐</div>
+        <div class="tc-text">Network Infrastructure</div>
+        <div class="tc-status online">● Active</div>
+      </div>
+      <div class="tech-card tc-2">
+        <div class="tc-icon">🔐</div>
+        <div class="tc-text">Security Monitoring</div>
+        <div class="tc-status online">● Active</div>
+      </div>
+      <div class="tech-card tc-3">
+        <div class="tc-icon">🐳</div>
+        <div class="tc-text">DevOps & Deployment</div>
+        <div class="tc-status online">● Active</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SERVICES ───────────────────────────── -->
+  <section class="services" id="services">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">What I Offer</span>
+        <h2>Services</h2>
+        <p>Professional IT services tailored to your business needs. All services are delivered remotely with full documentation.</p>
+      </div>
+      <div class="services-grid" id="servicesGrid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PRICING ────────────────────────────── -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Transparent Pricing</span>
+        <h2>How Much Does It Cost?</h2>
+        <p>Set your own hourly rate — you decide. Minimum ₹80/hr. No hidden charges.</p>
+      </div>
+
+      <div class="pricing-card">
+        <div class="pricing-left">
+          <h3>Hourly Rate</h3>
+          <p class="pricing-desc">You set the rate. I set the minimum. Simple, fair, transparent.</p>
+
+          <div class="price-slider-section">
+            <div class="slider-labels">
+              <span>Min ₹80</span>
+              <span id="sliderValue" class="slider-current">₹150/hr</span>
+              <span>Max ₹500</span>
+            </div>
+            <input type="range" id="priceSlider" min="80" max="500" value="150" class="price-slider" />
+          </div>
+
+          <div class="currency-grid" id="currencyGrid">
+            <!-- Populated by JS -->
+          </div>
+
+          <p class="pricing-note">💡 Currency rates update in real time using free exchange rate API</p>
+        </div>
+
+        <div class="pricing-right">
+          <h3>What's Included</h3>
+          <ul class="included-list">
+            <li>✅ Free initial consultation (30 min)</li>
+            <li>✅ Detailed project documentation</li>
+            <li>✅ Progress updates every 24 hours</li>
+            <li>✅ Post-delivery support (7 days)</li>
+            <li>✅ Knowledge transfer session</li>
+            <li>✅ Secure remote access tools</li>
+            <li>✅ Configuration backups</li>
+            <li>✅ Full ownership of deliverables</li>
+          </ul>
+          <a href="pages/order.html" class="btn-primary" style="width:100%;text-align:center;display:block;margin-top:1.5rem;">Place an Order →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ABOUT ──────────────────────────────── -->
+  <section class="about" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-text">
+          <span class="section-tag">About Me</span>
+          <h2>Debasish Lenka</h2>
+          <p class="about-role">Systems &amp; Network Engineer · IT Support Specialist</p>
+          <p>With 5+ years of hands-on experience in enterprise IT infrastructure, I help businesses set up, secure, and maintain their technology stack. I specialize in Cisco networking, Microsoft 365, cybersecurity, and modern DevOps practices.</p>
+          <div class="cert-badges">
+            <span class="cert">CCNA 200-301</span>
+            <span class="cert">Fortinet NSE</span>
+            <span class="cert">Google SysAdmin</span>
+            <span class="cert">IBM Networks</span>
+          </div>
+          <a href="https://debasishlenka6.github.io/debasish-portfolio" target="_blank" class="btn-secondary">View Full Portfolio →</a>
+        </div>
+        <div class="about-skills">
+          <h3>Core Skills</h3>
+          <div class="skills-list">
+            <div class="skill-item"><span class="skill-icon">🔌</span><span>Cisco · Meraki · UniFi</span></div>
+            <div class="skill-item"><span class="skill-icon">🛡️</span><span>Fortinet · Cybersecurity · SIEM</span></div>
+            <div class="skill-item"><span class="skill-icon">☁️</span><span>Microsoft 365 · Azure AD</span></div>
+            <div class="skill-item"><span class="skill-icon">🐳</span><span>Docker · Kubernetes · CI/CD</span></div>
+            <div class="skill-item"><span class="skill-icon">🖥️</span><span>Windows Server · Active Directory</span></div>
+            <div class="skill-item"><span class="skill-icon">📊</span><span>ManageEngine · DLP · Monitoring</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CONTACT ────────────────────────────── -->
+  <section class="contact" id="contact">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Get In Touch</span>
+        <h2>Have a Question?</h2>
+        <p>Not ready to place an order yet? Send a quick message and I'll respond within 24 hours.</p>
+      </div>
+      <form class="contact-form" id="contactForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Your Name *</label>
+            <input type="text" id="contactName" placeholder="John Smith" required />
+          </div>
+          <div class="form-group">
+            <label>Email Address *</label>
+            <input type="email" id="contactEmail" placeholder="john@company.com" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Message *</label>
+          <textarea id="contactMessage" rows="4" placeholder="Tell me about your project or ask a question..." required></textarea>
+        </div>
+        <button type="submit" class="btn-primary" id="contactBtn">Send Message →</button>
+        <div id="contactStatus" class="form-status"></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ─────────────────────────────── -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="footer-logo">⚡ Deba Technologies</div>
+          <p>Professional IT Support &amp; Network Services. Based in India, serving clients globally.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Services</h4>
+          <a href="#services">IT Support</a>
+          <a href="#services">Network Setup</a>
+          <a href="#services">Security</a>
+          <a href="#services">DevOps</a>
+        </div>
+        <div class="footer-links">
+          <h4>Quick Links</h4>
+          <a href="pages/order.html">Place Order</a>
+          <a href="https://debasishlenka6.github.io/debasish-portfolio" target="_blank">Portfolio</a>
+          <a href="#contact">Contact</a>
+          <a href="#pricing">Pricing</a>
+        </div>
+        <div class="footer-contact">
+          <h4>Contact</h4>
+          <p>📧 Via contact form below</p>
+          <p>🌍 Remote · India</p>
+          <p>⏰ Mon–Sat, 9am–7pm IST</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Deba Technologies. Built with ❤️ by Debasish Lenka.</p>
+        <p class="footer-tech">Powered by: Docker · Kubernetes · GitHub Actions</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

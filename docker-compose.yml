@@ -1,0 +1,77 @@
+services:
+
+  # ── PostgreSQL Database ─────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: deba-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${DB_NAME:-deba_technologies}
+      POSTGRES_USER:     ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/db/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-deba_technologies}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - deba-network
+
+  # ── Node.js API ──────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: deba-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV:           production
+      PORT:               3000
+      DB_HOST:            postgres
+      DB_PORT:            5432
+      DB_NAME:            ${DB_NAME:-deba_technologies}
+      DB_USER:            ${DB_USER:-postgres}
+      DB_PASSWORD:        ${DB_PASSWORD}
+      GMAIL_USER:         ${GMAIL_USER:-}
+      GMAIL_APP_PASSWORD: ${GMAIL_APP_PASSWORD:-}
+      NOTIFY_EMAIL:       ${NOTIFY_EMAIL:-}
+      ALLOWED_ORIGINS:    ${ALLOWED_ORIGINS:-http://localhost:8080}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - deba-network
+
+  # ── Frontend + Nginx ─────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: deba-frontend
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    networks:
+      - deba-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  deba-network:
+    driver: bridge
