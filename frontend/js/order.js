@@ -38,14 +38,18 @@ function preselectService() {
   }
 }
 
-// Set min date to tomorrow
+// Set min date to tomorrow, default to 7 days out
 function setMinDate() {
   const dateInput = document.getElementById('startDate');
   if (!dateInput) return;
+  const pad = n => String(n).padStart(2, '0');
+  const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  dateInput.min = tomorrow.toISOString().split('T')[0];
-  dateInput.value = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
+  const weekOut = new Date();
+  weekOut.setDate(weekOut.getDate() + 7);
+  dateInput.min   = fmt(tomorrow);
+  dateInput.value = fmt(weekOut);
 }
 
 // Character count for description
@@ -109,8 +113,6 @@ function initRateInput() {
   const warning     = document.getElementById('priceWarning');
   if (!rateInput) return;
 
-  currencySel?.addEventListener('change', onCurrencyChange);
-
   rateInput.addEventListener('input', () => {
     const val      = parseFloat(rateInput.value);
     const currency = getSelectedCurrency();
@@ -152,9 +154,16 @@ function initOrderForm() {
   const form = document.getElementById('orderForm');
   if (!form) return;
 
-  ['serviceType','estimatedHours'].forEach(id => {
-    document.getElementById(id)?.addEventListener('change', updateSummary);
+  // Every field that affects the summary panel
+  ['serviceType', 'estimatedHours', 'rateCurrency'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', () => {
+      if (id === 'rateCurrency') onCurrencyChange();
+      else updateSummary();
+    });
   });
+  const rateEl = document.getElementById('hourlyRate');
+  rateEl?.addEventListener('input',  updateSummary);
+  rateEl?.addEventListener('change', updateSummary);
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
