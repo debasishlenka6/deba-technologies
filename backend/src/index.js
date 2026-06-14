@@ -29,25 +29,25 @@ app.use(cors({
 app.use(express.json({ limit: '10kb' }));
 
 // ── RATE LIMITING ────────────────────────────────
+const isTest = process.env.NODE_ENV === 'test';
+
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  windowMs: 15 * 60 * 1000,
+  max: isTest ? 10000 : 100,
   message: { error: 'Too many requests. Please try again in 15 minutes.' }
 });
 
 const orderLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5,                    // max 5 orders per IP per hour
+  windowMs: 60 * 60 * 1000,
+  max: isTest ? 10000 : 5,
   message: { error: 'Too many order requests. Please try again later.' }
 });
 
 const contactLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 10,
+  max: isTest ? 10000 : 10,
   message: { error: 'Too many messages. Please try again later.' }
 });
-
-app.use('/api/', generalLimiter);
 
 // ── ROUTES ───────────────────────────────────────
 app.get('/api/health', async (req, res) => {
