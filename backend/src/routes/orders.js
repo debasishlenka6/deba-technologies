@@ -62,16 +62,15 @@ router.post('/', orderValidation, async (req, res) => {
       INSERT INTO orders (
         order_id, client_name, client_email, client_company, client_country,
         service_type, project_description, estimated_hours, preferred_start_date,
-        hourly_rate_inr, currency, hourly_rate, referral_source, additional_notes
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+        hourly_rate_inr, referral_source, additional_notes
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
       RETURNING id, order_id, created_at
     `, [
       orderId, client_name, client_email, client_company || null,
       client_country, service_type, project_description,
       estimated_hours || '10-20',
       preferred_start_date || null,
-      hourly_rate_inr, currency, hourly_rate || hourly_rate_inr,
-      referral_source || 'Other', additional_notes || null
+      hourly_rate_inr, referral_source || 'Other', additional_notes || null
     ]);
 
     const order = result.rows[0];
