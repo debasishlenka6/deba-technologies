@@ -1,7 +1,6 @@
 // ── CONFIG ──────────────────────────────────────
-const API_BASE = window.location.hostname === 'localhost'
-  ? 'http://localhost:3000/api'
-  : '/api';
+const _local = ['localhost','127.0.0.1'].includes(window.location.hostname);
+const API_BASE = _local ? 'http://localhost:3000/api' : '/api';
 
 const MIN_RATE_INR = 80;
 const DEFAULT_RATE_INR = 150;

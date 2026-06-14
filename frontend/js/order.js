@@ -1,7 +1,6 @@
 // ── ORDER PAGE JS ─────────────────────────────────
-const API_BASE_ORDER = window.location.hostname === 'localhost'
-  ? 'http://localhost:3000/api'
-  : '/api';
+const _local = ['localhost','127.0.0.1'].includes(window.location.hostname);
+const API_BASE_ORDER = _local ? 'http://localhost:3000/api' : '/api';
 
 const CURRENCY_SYMS    = { INR:'₹', USD:'$', EUR:'€', GBP:'£', AED:'AED ', SGD:'S$', AUD:'A$', CAD:'CA$' };
 const CURRENCY_MIN     = { INR:80, USD:1, GBP:1, EUR:1, AED:4, SGD:2, AUD:2, CAD:2 };
@@ -226,6 +225,11 @@ function initOrderForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        throw new Error('Backend server is not running. Please start it with: cd backend && npm start');
+      }
       const data = await res.json();
 
       if (res.ok) {
@@ -245,7 +249,11 @@ function initOrderForm() {
         throw new Error(data.error || 'Order submission failed');
       }
     } catch (err) {
-      status.textContent = `❌ ${err.message}. Please try again or use the contact form.`;
+      const isNetworkErr = err instanceof TypeError && err.message.includes('fetch');
+      const msg = isNetworkErr
+        ? 'Cannot reach the server. Make sure the backend is running (cd backend && npm start).'
+        : err.message;
+      status.textContent = `❌ ${msg}`;
       status.className = 'form-status error';
       btn.disabled = false;
       btn.textContent = '🚀 Submit Order Request';
