@@ -107,6 +107,12 @@ const COUNTRY_CURRENCY = {
 const ALL_CURRENCIES = 'USD,EUR,GBP,AED,SGD,AUD,CAD';
 const CURRENCY_SYMS  = { INR:'₹', USD:'$', EUR:'€', GBP:'£', AED:'AED ', SGD:'S$', AUD:'A$', CAD:'CA$' };
 
+// Approximate fallback rates per 1 INR (used when API is unavailable)
+const FALLBACK_RATES_PER_INR = {
+  USD: 0.012, EUR: 0.011, GBP: 0.0094,
+  AED: 0.044, SGD: 0.016, AUD: 0.018, CAD: 0.016, JPY: 1.78
+};
+
 // Update input UI to reflect activeCurrency
 function updateRateUI() {
   const { code, sym } = activeCurrency;
@@ -152,7 +158,9 @@ async function applyCurrencyForCountry(country) {
     const data = await res.json();
     activeCurrency = { code: cur.code, sym: cur.sym, ratePerINR: data.rates[cur.code] };
   } catch {
-    activeCurrency = { code: 'INR', sym: '₹', ratePerINR: 1 };
+    // API unavailable — use fallback rate so currency still switches
+    const fallback = FALLBACK_RATES_PER_INR[cur.code] || 1;
+    activeCurrency = { code: cur.code, sym: cur.sym, ratePerINR: fallback };
   }
   updateRateUI();
   updateConversions(canonicalINR);
@@ -169,36 +177,42 @@ async function updateConversions(amountINR) {
   const others  = ALL_CURRENCIES.split(',').filter(c => c !== primary);
   const toParam = primary === 'INR' ? ALL_CURRENCIES : ['INR', ...others].join(',');
 
+  let rates = null;
   try {
     const res  = await fetch(`${API_BASE_ORDER}/currency?amount=${amountINR}&from=INR&to=${toParam}`);
     const data = await res.json();
-
-    // Build entries: exclude the currently active currency (already in the input)
-    const entries = primary !== 'INR'
-      ? [['INR', amountINR], ...Object.entries(data.rates).filter(([c]) => c !== primary)]
-      : Object.entries(data.rates);
-
-    container.innerHTML = entries
-      .map(([cur, val]) => {
-        const sym        = CURRENCY_SYMS[cur] || '';
-        const ratePerINR = parseFloat(val) / amountINR;
-        return `<span class="price-conv-item" data-code="${cur}" data-sym="${sym.trim()}" data-rate="${ratePerINR}" title="Click to enter rate in ${cur}">${sym}${parseFloat(val).toFixed(2)} ${cur}</span>`;
-      })
-      .join('');
-
-    // Clicking a chip switches the input to that currency
-    container.querySelectorAll('.price-conv-item').forEach(chip => {
-      chip.addEventListener('click', () => {
-        const code       = chip.dataset.code;
-        const ratePerINR = parseFloat(chip.dataset.rate);
-        activeCurrency   = { code, sym: CURRENCY_SYMS[code] || chip.dataset.sym, ratePerINR };
-        updateRateUI();
-        updateConversions(canonicalINR);
-      });
-    });
+    rates = data.rates;
   } catch {
-    container.innerHTML = '<span class="price-conv-item" style="cursor:default;color:var(--muted)">Conversion unavailable</span>';
+    // API unavailable — build rates from fallback constants
+    rates = {};
+    toParam.split(',').forEach(c => {
+      if (FALLBACK_RATES_PER_INR[c]) rates[c] = parseFloat((amountINR * FALLBACK_RATES_PER_INR[c]).toFixed(2));
+    });
   }
+
+  // Build entries: exclude the currently active currency (already in the input)
+  const entries = primary !== 'INR'
+    ? [['INR', amountINR], ...Object.entries(rates).filter(([c]) => c !== primary)]
+    : Object.entries(rates);
+
+  container.innerHTML = entries
+    .map(([cur, val]) => {
+      const sym        = CURRENCY_SYMS[cur] || '';
+      const ratePerINR = parseFloat(val) / amountINR;
+      return `<span class="price-conv-item" data-code="${cur}" data-sym="${sym.trim()}" data-rate="${ratePerINR}" title="Click to switch to ${cur}">${sym}${parseFloat(val).toFixed(2)} ${cur}</span>`;
+    })
+    .join('');
+
+  // Clicking a chip switches the input to that currency
+  container.querySelectorAll('.price-conv-item').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const code       = chip.dataset.code;
+      const ratePerINR = parseFloat(chip.dataset.rate);
+      activeCurrency   = { code, sym: CURRENCY_SYMS[code] || chip.dataset.sym, ratePerINR };
+      updateRateUI();
+      updateConversions(canonicalINR);
+    });
+  });
 }
 
 // Rate input validation + conversion
