@@ -1,6 +1,7 @@
 // ── ORDER PAGE JS ─────────────────────────────────
-const _local = ['localhost','127.0.0.1'].includes(window.location.hostname);
-const API_BASE_ORDER = _local ? 'http://localhost:3000/api' : '/api';
+const API_BASE_ORDER = ['localhost','127.0.0.1'].includes(window.location.hostname)
+  ? 'http://localhost:3000/api'
+  : '/api';
 
 const CURRENCY_SYMS    = { INR:'₹', USD:'$', EUR:'€', GBP:'£', AED:'AED ', SGD:'S$', AUD:'A$', CAD:'CA$' };
 const CURRENCY_MIN     = { INR:80, USD:1, GBP:1, EUR:1, AED:4, SGD:2, AUD:2, CAD:2 };
