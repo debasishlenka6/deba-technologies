@@ -1,6 +1,6 @@
 // ── ORDER PAGE JS ─────────────────────────────────
 const MIN_INR = 80;
-const API_BASE_ORDER = window.location.port === '3000'
+const API_BASE_ORDER = window.location.hostname === 'localhost'
   ? 'http://localhost:3000/api'
   : '/api';
 
