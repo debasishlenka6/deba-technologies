@@ -357,12 +357,21 @@ a:hover { color: var(--accent2); }
   margin-bottom: 1rem; padding-bottom: .5rem;
   border-bottom: 1px solid var(--border);
 }
-.price-input-group { position: relative; }
-.price-input-group .currency-sym {
-  position: absolute; left: .9rem; top: 50%; transform: translateY(-50%);
-  color: var(--accent2); font-weight: 700; font-size: 1rem;
+.price-input-group { display: flex; align-items: stretch; }
+.price-input-group select {
+  background: var(--bg2); color: var(--text);
+  border: 1px solid var(--border); border-right: none;
+  border-radius: 8px 0 0 8px;
+  padding: .7rem 1rem; font-size: .875rem;
+  cursor: pointer; min-width: 108px; outline: none;
+  font-family: inherit;
 }
-.price-input-group input { padding-left: 2rem !important; }
+.price-input-group select:focus { border-color: var(--accent); }
+.price-input-group input {
+  border-radius: 0 8px 8px 0 !important;
+  padding-left: 1rem !important;
+  flex: 1;
+}
 .price-conversions { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: .5rem; }
 .price-conv-item {
   font-size: .8rem; color: var(--muted); background: var(--bg2);

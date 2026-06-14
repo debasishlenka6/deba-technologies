@@ -43,7 +43,7 @@ async function notifyNewOrder(order) {
           ${order.client_company ? `<tr><td style="color:#8B949E;padding:.5rem 0">Company</td><td>${order.client_company}</td></tr>` : ''}
           <tr><td style="color:#8B949E;padding:.5rem 0">Service</td><td style="font-weight:700">${order.service_type}</td></tr>
           <tr><td style="color:#8B949E;padding:.5rem 0">Hours</td><td>${order.estimated_hours}</td></tr>
-          <tr><td style="color:#8B949E;padding:.5rem 0">Rate</td><td style="font-weight:700;color:#F59E0B">₹${order.hourly_rate_inr}/hr</td></tr>
+          <tr><td style="color:#8B949E;padding:.5rem 0">Rate</td><td style="font-weight:700;color:#F59E0B">${order.currency || 'INR'} ${order.hourly_rate || order.hourly_rate_inr}/hr${order.currency && order.currency !== 'INR' ? ` <span style="color:#8B949E;font-weight:400">(≈ ₹${order.hourly_rate_inr}/hr)</span>` : ''}</td></tr>
         </table>
         <div style="margin-top:1.5rem;padding:1rem;background:#161B22;border-radius:8px;border-left:4px solid #2D9CDB">
           <p style="color:#8B949E;margin-bottom:.5rem;font-size:.85rem">Project Description</p>
@@ -69,7 +69,7 @@ async function notifyNewOrder(order) {
           <p style="margin:.25rem 0 0;font-size:1.5rem;font-weight:700;color:#00C896;font-family:monospace">${order.orderId}</p>
         </div>
         <p><strong>Service requested:</strong> ${order.service_type}</p>
-        <p><strong>Your rate:</strong> ₹${order.hourly_rate_inr}/hr</p>
+        <p><strong>Your rate:</strong> ${order.currency || 'INR'} ${order.hourly_rate || order.hourly_rate_inr}/hr</p>
         <p style="color:#8B949E">⏰ I typically respond within 24 hours with a detailed proposal and timeline.</p>
         <p style="color:#8B949E">If you have any immediate questions, reply to this email directly.</p>
         <hr style="border-color:#21262D;margin:1.5rem 0"/>

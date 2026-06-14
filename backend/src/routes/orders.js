@@ -7,6 +7,8 @@ const router  = express.Router();
 const MIN_RATE = 80;
 
 // ── VALIDATION RULES ─────────────────────────────
+const VALID_CURRENCIES = ['INR','USD','GBP','EUR','AED','SGD','AUD','CAD'];
+
 const orderValidation = [
   body('client_name').trim().isLength({ min:2, max:100 }).withMessage('Name must be 2-100 characters'),
   body('client_email').isEmail().normalizeEmail().withMessage('Valid email required'),
@@ -17,6 +19,8 @@ const orderValidation = [
   body('estimated_hours').optional().isIn(['1-5','5-10','10-20','20-40','40+']),
   body('preferred_start_date').optional({ checkFalsy:true }).isISO8601().withMessage('Invalid date format'),
   body('hourly_rate_inr').isInt({ min: MIN_RATE }).withMessage(`Minimum rate is ₹${MIN_RATE}/hr`),
+  body('currency').optional().isIn(VALID_CURRENCIES).withMessage('Invalid currency'),
+  body('hourly_rate').optional().isFloat({ min: 0.01 }).withMessage('Invalid hourly rate'),
   body('referral_source').optional().trim().isLength({ max:50 }),
   body('additional_notes').optional().trim().isLength({ max:500 }),
 ];
@@ -42,7 +46,8 @@ router.post('/', orderValidation, async (req, res) => {
   const {
     client_name, client_email, client_company, client_country,
     service_type, project_description, estimated_hours,
-    preferred_start_date, hourly_rate_inr, referral_source, additional_notes
+    preferred_start_date, hourly_rate_inr, referral_source, additional_notes,
+    currency = 'INR', hourly_rate
   } = req.body;
 
   // Extra security: enforce minimum rate
@@ -57,15 +62,16 @@ router.post('/', orderValidation, async (req, res) => {
       INSERT INTO orders (
         order_id, client_name, client_email, client_company, client_country,
         service_type, project_description, estimated_hours, preferred_start_date,
-        hourly_rate_inr, referral_source, additional_notes
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+        hourly_rate_inr, currency, hourly_rate, referral_source, additional_notes
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
       RETURNING id, order_id, created_at
     `, [
       orderId, client_name, client_email, client_company || null,
       client_country, service_type, project_description,
       estimated_hours || '10-20',
       preferred_start_date || null,
-      hourly_rate_inr, referral_source || 'Other', additional_notes || null
+      hourly_rate_inr, currency, hourly_rate || hourly_rate_inr,
+      referral_source || 'Other', additional_notes || null
     ]);
 
     const order = result.rows[0];
@@ -74,10 +80,10 @@ router.post('/', orderValidation, async (req, res) => {
     mailer.notifyNewOrder({
       orderId, client_name, client_email, client_company,
       client_country, service_type, project_description,
-      estimated_hours, hourly_rate_inr
+      estimated_hours, hourly_rate_inr, currency, hourly_rate: hourly_rate || hourly_rate_inr
     }).catch(err => console.warn('Email notification failed:', err.message));
 
-    console.log(`✅ New order: ${orderId} | ${service_type} | ₹${hourly_rate_inr}/hr | ${client_country}`);
+    console.log(`✅ New order: ${orderId} | ${service_type} | ${currency} ${hourly_rate || hourly_rate_inr}/hr | ${client_country}`);
 
     res.status(201).json({
       success: true,

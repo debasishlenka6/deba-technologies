@@ -120,21 +120,27 @@
         <div class="order-section">
           <div class="order-section-title">💰 Your Budget (Hourly Rate)</div>
           <p style="color:var(--muted);font-size:.875rem;margin-bottom:1rem">
-            Set your hourly rate. Minimum is <strong id="rateMinNote" style="color:var(--accent2)">₹80/hr</strong>.
-            You can offer more based on urgency or complexity.
+            Select your currency and set your hourly rate.
+            <strong id="rateMinNote" style="color:var(--accent2)">Minimum ₹80/hr</strong>
+            — offer more based on urgency or complexity.
           </p>
           <div class="form-group">
-            <label id="rateLabel">Rate per hour (in ₹ INR) *</label>
+            <label>Rate per hour *</label>
             <div class="price-input-group">
-              <span class="currency-sym" id="rateCurrencySym">₹</span>
+              <select id="rateCurrency">
+                <option value="INR">₹ INR</option>
+                <option value="USD">$ USD</option>
+                <option value="GBP">£ GBP</option>
+                <option value="EUR">€ EUR</option>
+                <option value="AED">AED</option>
+                <option value="SGD">S$ SGD</option>
+                <option value="AUD">A$ AUD</option>
+                <option value="CAD">CA$ CAD</option>
+              </select>
               <input type="number" id="hourlyRate" value="150" min="80" max="50000"
-                     placeholder="150" required
-                     style="padding-left:2rem" />
+                     placeholder="150" required />
             </div>
             <div class="price-warning" id="priceWarning">⚠️ Minimum rate is ₹80/hr</div>
-            <div class="price-conversions" id="priceConversions">
-              <span class="price-conv-item">Loading conversions...</span>
-            </div>
           </div>
         </div>
 
