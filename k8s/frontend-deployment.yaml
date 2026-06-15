@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deba-frontend
+  labels:
+    app: deba-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: deba-frontend
+  template:
+    metadata:
+      labels:
+        app: deba-frontend
+    spec:
+      containers:
+      - name: deba-frontend
+        image: debasishlenka6/deba-frontend:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
